@@ -1,0 +1,10 @@
+{
+  "name": "SHS Offline Learning Hub",
+  "short_name": "SHS Hub",
+  "description": "Offline-First Digital Learning Resource Sharing Platform for Senior High Schools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme_color": "#0f4c81",
+  "icons": []
+}

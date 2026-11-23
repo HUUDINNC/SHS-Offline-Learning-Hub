@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f4c81" />
+    <title>SHS Offline Learning Hub</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">SHS Offline Learning Hub</span>
+        <span id="netBadge" class="badge badge-online">Online (LAN)</span>
+      </div>
+      <div id="userBar" class="user-bar hidden">
+        <span id="userInfo"></span>
+        <button id="openPwdBtn" class="btn btn-outline btn-sm" type="button">
+          Change Password
+        </button>
+        <button id="logoutBtn" class="btn btn-outline btn-sm" type="button">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Login View -->
+      <section id="loginSection" class="card auth-card">
+        <h2>Sign In to School Learning Hub</h2>
+        <p class="muted">
+          Access curriculum notes, past questions, and study guides over the
+          school network.
+        </p>
+        <form id="loginForm" class="stack">
+          <label>
+            Username
+            <input
+              type="text"
+              id="loginUsername"
+              required
+              autocomplete="username"
+              placeholder="e.g., student01"
+            />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              id="loginPassword"
+              required
+              autocomplete="current-password"
+              placeholder="Enter password"
+            />
+          </label>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+        <div id="loginError" class="alert alert-error hidden"></div>
+        <p class="muted" style="margin: 0.75rem 0 0; font-size: 0.82rem">
+          Forgot your password? Contact the School ICT Administrator with your
+          Index or Staff ID to reset it.
+        </p>
+        <div class="demo-creds">
+          <strong>Sample Accounts:</strong>
+          <div>Admin: <code>admin01</code> / <code>Admin@123</code></div>
+          <div>Teacher: <code>teacher01</code> / <code>Teacher@123</code></div>
+          <div>Student: <code>student01</code> / <code>Student@123</code></div>
+        </div>
+      </section>
+
+      <!-- Main App View -->
+      <section id="appSection" class="hidden">
+        <nav class="tabs" id="navTabs">
+          <button class="tab-btn active" data-tab="browseTab" type="button">
+            Browse Resources
+          </button>
+          <button class="tab-btn" data-tab="offlineTab" type="button">
+            Saved Offline (<span id="offlineCount">0</span>)
+          </button>
+          <button
+            class="tab-btn role-teacher-admin hidden"
+            data-tab="uploadTab"
+            type="button"
+          >
+            Teacher Upload
+          </button>
+          <button
+            class="tab-btn role-admin hidden"
+            data-tab="adminTab"
+            type="button"
+          >
+            Admin Console
+          </button>
+        </nav>
+
+        <!-- Browse Resources Tab -->
+        <div id="browseTab" class="tab-panel">
+          <div class="card filters-grid">
+            <label>
+              Form
+              <select id="filterForm">
+                <option value="">All Forms</option>
+              </select>
+            </label>
+            <label>
+              Subject
+              <select id="filterSubject">
+                <option value="">All Subjects</option>
+              </select>
+            </label>
+            <label>
+              Topic
+              <select id="filterTopic">
+                <option value="">All Topics</option>
+              </select>
+            </label>
+            <label>
+              Type
+              <select id="filterType">
+                <option value="">All Types</option>
+                <option value="lecture_note">Lecture Note</option>
+                <option value="past_question">Past Question</option>
+                <option value="syllabus">Syllabus</option>
+                <option value="video_guide">Video/Audio Guide</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label class="span-2">
+              Search
+              <input
+                type="search"
+                id="filterQuery"
+                placeholder="Search by title, topic, or subject..."
+              />
+            </label>
+            <div class="filter-actions">
+              <button
+                id="applyFiltersBtn"
+                class="btn btn-primary"
+                type="button"
+              >
+                Filter
+              </button>
+              <button
+                id="resetFiltersBtn"
+                class="btn btn-outline"
+                type="button"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <div id="resourceList" class="resource-grid"></div>
+        </div>
+
+        <!-- Saved Offline Tab -->
+        <div id="offlineTab" class="tab-panel hidden">
+          <div class="card">
+            <h3>Saved for Offline Study</h3>
+            <p class="muted">
+              Resources saved on this device can be opened even if the network
+              connection drops.
+            </p>
+            <div id="offlineList" class="resource-grid"></div>
+          </div>
+        </div>
+
+        <!-- Teacher / Admin Upload Tab -->
+        <div id="uploadTab" class="tab-panel hidden">
+          <div class="two-col">
+            <form
+              id="uploadForm"
+              class="card stack"
+              enctype="multipart/form-data"
+            >
+              <h3>Upload Learning Resource</h3>
+              <label>
+                Title *
+                <input
+                  type="text"
+                  id="resTitle"
+                  required
+                  placeholder="e.g., Week 3 Networking Notes"
+                />
+              </label>
+              <label>
+                Description
+                <textarea
+                  id="resDesc"
+                  rows="2"
+                  placeholder="Brief summary of the material"
+                ></textarea>
+              </label>
+              <label>
+                Resource Type *
+                <select id="resType" required>
+                  <option value="lecture_note">Lecture Note</option>
+                  <option value="past_question">Past Question</option>
+                  <option value="syllabus">Syllabus</option>
+                  <option value="video_guide">Video/Audio Guide</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label>
+                Form *
+                <select id="resForm" required></select>
+              </label>
+              <label>
+                Subject *
+                <select id="resSubject" required></select>
+              </label>
+              <label>
+                Topic
+                <select id="resTopic">
+                  <option value="">-- Optional Topic --</option>
+                </select>
+              </label>
+              <label>
+                File (PDF, DOC/DOCX, PPT/PPTX, TXT, MP4, MP3 — max 50MB) *
+                <input type="file" id="resFile" required />
+              </label>
+              <button type="submit" class="btn btn-primary">
+                Publish Resource
+              </button>
+              <div id="uploadStatus" class="alert hidden"></div>
+            </form>
+
+            <form id="topicForm" class="card stack">
+              <h3>Add Curriculum Topic</h3>
+              <label>
+                Form *
+                <select id="topicFormSelect" required></select>
+              </label>
+              <label>
+                Subject *
+                <select id="topicSubjectSelect" required></select>
+              </label>
+              <label>
+                Topic Title *
+                <input
+                  type="text"
+                  id="topicTitleInput"
+                  required
+                  placeholder="e.g., Logic Gates & Boolean Algebra"
+                />
+              </label>
+              <button type="submit" class="btn btn-outline">Add Topic</button>
+              <div id="topicStatus" class="alert hidden"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Admin Tab -->
+        <div id="adminTab" class="tab-panel hidden">
+          <div id="adminStats" class="stats-grid"></div>
+
+          <div class="two-col" style="margin-bottom: 1rem">
+            <form id="createUserForm" class="card stack">
+              <h3>Add Single User</h3>
+              <label>
+                Full Name *
+                <input
+                  type="text"
+                  id="newFullName"
+                  required
+                  placeholder="e.g., Kofi Boateng"
+                />
+              </label>
+              <label>
+                Username / Student Index ID *
+                <input
+                  type="text"
+                  id="newUsername"
+                  required
+                  placeholder="e.g., 01240089 or staff02"
+                />
+              </label>
+              <label>
+                Initial Password *
+                <input type="text" id="newPassword" required value="Shs@2026" />
+              </label>
+              <label>
+                Role *
+                <select id="newRole">
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="admin">Administrator</option>
+                </select>
+              </label>
+              <label>
+                Form Level (Students only)
+                <select id="newFormLevel">
+                  <option value="SHS 1">SHS 1</option>
+                  <option value="SHS 2">SHS 2</option>
+                  <option value="SHS 3">SHS 3</option>
+                </select>
+              </label>
+              <button type="submit" class="btn btn-primary">
+                Create Account
+              </button>
+              <div id="createUserStatus" class="alert hidden"></div>
+            </form>
+
+            <form id="bulkImportForm" class="card stack">
+              <h3>Bulk Import 1,000+ Users (CSV)</h3>
+              <p class="muted" style="margin: 0">
+                Upload a <code>.csv</code> file or paste rows in format:<br /><code
+                  >full_name,username,password,role,form_level</code
+                >
+              </p>
+              <label>
+                Select CSV File
+                <input type="file" id="bulkCsvFile" accept=".csv,text/csv" />
+              </label>
+              <label>
+                Or Paste CSV Rows
+                <textarea
+                  id="bulkCsvText"
+                  rows="5"
+                  placeholder="full_name,username,password,role,form_level&#10;Abena Mensah,01240101,Shs@2026,student,SHS 1&#10;Mr. Yaw Owusu,staff102,Teacher@2026,teacher,"
+                ></textarea>
+              </label>
+              <button type="submit" class="btn btn-primary">
+                Run Bulk Import
+              </button>
+              <div id="bulkImportStatus" class="alert hidden"></div>
+              <button
+                id="printSlipsBtn"
+                class="btn btn-outline hidden"
+                type="button"
+              >
+                Print Credential Slips
+              </button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h3>Registered Users</h3>
+            <div class="table-wrap">
+              <table id="usersTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Username / Index</th>
+                    <th>Role</th>
+                    <th>Form</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Resource Viewer Modal -->
+      <dialog id="viewerModal" class="viewer-dialog">
+        <div class="viewer-header">
+          <h3 id="viewerTitle">Resource Viewer</h3>
+          <button
+            id="closeViewerBtn"
+            class="btn btn-outline btn-sm"
+            type="button"
+          >
+            Close
+          </button>
+        </div>
+        <div id="viewerBody" class="viewer-body"></div>
+      </dialog>
+
+      <!-- Change Password Modal -->
+      <dialog
+        id="pwdModal"
+        class="viewer-dialog"
+        style="height: auto; max-width: 420px"
+      >
+        <div class="viewer-header">
+          <h3>Change Account Password</h3>
+          <button id="closePwdBtn" class="btn btn-outline btn-sm" type="button">
+            Close
+          </button>
+        </div>
+        <form id="changePwdForm" class="stack" style="padding: 1rem">
+          <label>
+            Current Password *
+            <input type="password" id="curPwd" required />
+          </label>
+          <label>
+            New Password (min 6 characters) *
+            <input type="password" id="newAccountPwd" required minlength="6" />
+          </label>
+          <button type="submit" class="btn btn-primary">Update Password</button>
+          <div id="pwdStatus" class="alert hidden"></div>
+        </form>
+      </dialog>
+    </main>
+
+    <script src="/js/idb.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>
