@@ -1,6 +1,31 @@
+function readStorageItem(key) {
+  try {
+    const val = localStorage.getItem(key);
+    if (!val || val === 'undefined' || val === 'null') return null;
+    return val;
+  } catch {
+    return null;
+  }
+}
+
+function readJsonStorage(key, fallback = null) {
+  const raw = readStorageItem(key);
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Ignore storage removal errors in restricted contexts
+    }
+    return fallback;
+  }
+}
+
 const state = {
-  token: localStorage.getItem('shs_token') || null,
-  user: JSON.parse(localStorage.getItem('shs_user') || 'null'),
+  token: readStorageItem('shs_token'),
+  user: readJsonStorage('shs_user', null),
   curriculum: { forms: [], subjects: [], topics: [] },
   resources: [],
   offlineIds: new Set()
@@ -123,16 +148,24 @@ function clearTransientUI() {
 function setSession(token, user) {
   state.token = token;
   state.user = user;
-  localStorage.setItem('shs_token', token);
-  localStorage.setItem('shs_user', JSON.stringify(user));
+  try {
+    localStorage.setItem('shs_token', token);
+    localStorage.setItem('shs_user', JSON.stringify(user));
+  } catch {
+    // Ignore storage write errors in restricted contexts
+  }
   renderSession();
 }
 
 function clearSession() {
   state.token = null;
   state.user = null;
-  localStorage.removeItem('shs_token');
-  localStorage.removeItem('shs_user');
+  try {
+    localStorage.removeItem('shs_token');
+    localStorage.removeItem('shs_user');
+  } catch {
+    // Ignore storage removal errors in restricted contexts
+  }
   resetToBrowseTab();
   clearTransientUI();
   renderSession();
